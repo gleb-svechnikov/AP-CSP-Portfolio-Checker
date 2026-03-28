@@ -317,3 +317,10 @@ a:hover { text-decoration: underline; }
 
 .btn-inline { background: none; border: 1px solid currentColor; border-radius: 4px; padding: 2px 8px; font-size: 12px; cursor: pointer; color: inherit; margin-left: 4px; }
 .btn-inline:hover { opacity: .75; }
+
+/* Local folder picker */
+.local-drop { border: 2px dashed var(--border); border-radius: var(--radius); padding: 2.5rem 1rem; text-align: center; cursor: pointer; transition: border-color .15s, background .15s; }
+.local-drop:hover { border-color: var(--accent); background: var(--accent-subtle); }
+.local-drop-icon { font-size: 32px; margin-bottom: 10px; }
+.local-drop-text { font-size: 14px; font-weight: 500; margin-bottom: 4px; }
+.local-drop-sub  { font-size: 12px; color: var(--muted); }

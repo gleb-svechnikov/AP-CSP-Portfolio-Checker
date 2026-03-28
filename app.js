@@ -18,12 +18,14 @@ function switchTab(name, el) {
 function setMode(mode) {
   document.getElementById('singlePane').style.display = mode === 'single' ? 'block' : 'none';
   document.getElementById('batchPane').style.display  = mode === 'batch'  ? 'block' : 'none';
+  document.getElementById('localPane').style.display  = mode === 'local'  ? 'block' : 'none';
   document.getElementById('modeSingle').classList.toggle('active', mode === 'single');
   document.getElementById('modeBatch').classList.toggle('active',  mode === 'batch');
+  document.getElementById('modeLocal').classList.toggle('active',  mode === 'local');
 
   // show/hide tabs based on mode
-  document.getElementById('portfolioTab').style.display = mode === 'single' ? '' : 'none';
-  document.getElementById('dashTab').style.display      = mode === 'batch'  ? '' : 'none';
+  document.getElementById('portfolioTab').style.display = mode === 'batch' ? 'none' : '';
+  document.getElementById('dashTab').style.display      = mode === 'batch' ? '' : 'none';
 
   // reset to a sensible default tab when switching
   document.getElementById('mainContent').style.display = 'none';
@@ -124,3 +126,95 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.key === 'Enter') analyzeSingle();
   });
 });
+
+async function analyzeLocal() {
+  if (!window.showDirectoryPicker) {
+    showError('Your browser does not support the File System Access API. Try Chrome or Edge.');
+    return;
+  }
+  let dirHandle;
+  try {
+    dirHandle = await window.showDirectoryPicker({ mode: 'read' });
+  } catch(e) {
+    return; // user cancelled
+  }
+
+  clearError();
+  document.getElementById('emptyState').style.display = 'none';
+  document.getElementById('mainContent').style.display = 'none';
+  document.querySelector('.search-area').style.display = 'none';
+  setLoading(true, 'Reading local folder…');
+
+  try {
+    const exts = ['.py','.js','.ts','.java','.cpp','.c','.cs','.rb','.go','.swift','.html','.php'];
+    const contents = [];
+    codeContent = {};
+    let readmeText = '';
+
+    for await (const [name, handle] of dirHandle.entries()) {
+      if (handle.kind !== 'file') continue;
+      const lower = name.toLowerCase();
+      // always add every file to contents so checks (e.g. video) can find them
+      contents.push({ name, type: 'file', html_url: '', download_url: '' });
+      if (/readme/i.test(name)) {
+        const file = await handle.getFile();
+        readmeText = await file.text();
+      }
+      if (exts.some(e => lower.endsWith(e)) && Object.keys(codeContent).length < 6) {
+        const file = await handle.getFile();
+        codeContent[name] = await file.text();
+      }
+    }
+
+    // read commit history from .git/logs/HEAD
+    let commits = [];
+    try {
+      const gitHandle  = await dirHandle.getDirectoryHandle('.git');
+      const logsHandle = await gitHandle.getDirectoryHandle('logs');
+      const headHandle = await logsHandle.getFileHandle('HEAD');
+      const headFile   = await headHandle.getFile();
+      const headText   = await headFile.text();
+      // each non-empty line is one ref-log entry = one commit action
+      commits = headText.split('\n').filter(l => l.trim().length > 0).map(line => {
+        // format: <old-sha> <new-sha> <author> <timestamp> <tz>\t<message>
+        const parts = line.split('\t');
+        return { message: parts[1] || '', raw: line };
+      });
+    } catch(e) {
+      // no .git folder or no logs — leave commits empty
+    }
+
+    console.log('📁 Local folder:', dirHandle.name);
+    console.log('📄 All files found:', contents.map(f => f.name));
+    console.log('📝 README detected:', readmeText ? `yes (${readmeText.length} chars)` : 'no');
+    console.log('💻 Code files loaded:', Object.keys(codeContent));
+    console.log('🎬 Video files:', contents.filter(f => /\.(mp4|mov|avi|webm|mkv|gif)$/i.test(f.name)).map(f => f.name));
+    console.log('📦 Commits from .git/logs/HEAD:', commits.length);
+
+    // build a repoData-compatible object from local files
+    repoData = {
+      info: {
+        name: dirHandle.name,
+        html_url: '',
+        language: contents.length ? contents[0].name.split('.').pop().toUpperCase() : '—',
+        private: false,
+        updated_at: new Date().toISOString(),
+      },
+      contents,
+      commits,
+      readmeText,
+      parsed: { owner: 'local', repo: dirHandle.name },
+    };
+
+    setLoading(false);
+    renderAll();
+    document.getElementById('mainContent').style.display = 'block';
+    showNewSearchBtn();
+    switchTab('overview', document.querySelector('.tab'));
+  } catch(e) {
+    setLoading(false);
+    document.querySelector('.search-area').style.display = 'block';
+    showError('Could not read folder: ' + e.message);
+    document.getElementById('emptyState').style.display = 'block';
+  }
+}

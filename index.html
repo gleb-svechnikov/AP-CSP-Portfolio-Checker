@@ -27,6 +27,7 @@
     <div class="mode-switch">
       <button class="mode-btn active" id="modeSingle" onclick="setMode('single')">Single repo</button>
       <button class="mode-btn" id="modeBatch" onclick="setMode('batch')">Batch / class</button>
+      <button class="mode-btn" id="modeLocal" onclick="setMode('local')">Local folder</button>
     </div>
 
     <div id="singlePane">
@@ -41,6 +42,14 @@
       <div style="display:flex;gap:8px;margin-top:8px;">
         <button class="btn btn-primary" onclick="analyzeBatch()">Analyze All</button>
         <button class="btn btn-ghost" onclick="document.getElementById('batchUrls').value=''">Clear</button>
+      </div>
+    </div>
+
+    <div id="localPane" style="display:none">
+      <div class="local-drop" id="localDrop" onclick="analyzeLocal()">
+        <div class="local-drop-icon">📁</div>
+        <div class="local-drop-text">Click to choose a project folder</div>
+        <div class="local-drop-sub">Reads code files and README locally — nothing is uploaded</div>
       </div>
     </div>
   </div>

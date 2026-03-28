@@ -35,7 +35,7 @@ function renderAll() {
     </div>
     <div class="score-info">
       <h3>${info.name || repoData.parsed.repo}</h3>
-      <p>by ${repoData.parsed.owner} · <a href="${info.html_url}" target="_blank">View on GitHub ↗</a></p>
+      <p>by ${repoData.parsed.owner} ${info.html_url ? `<a href="${info.html_url}" target="_blank">View on GitHub \u2197</a>` : `<span style="color:var(--muted)"> folder</span>`}</p>
       <div class="progress-wrap">
         <div class="progress-track"><progress value="${pct}" max="100"></progress></div>
       </div>
