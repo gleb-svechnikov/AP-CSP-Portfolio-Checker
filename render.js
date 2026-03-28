@@ -58,7 +58,7 @@ function renderAll() {
   if (listing) {
     const files = Object.entries(codeContent);
     if (files.length) {
-      const CHUNK = 50; // lines per unbreakable chunk
+      const CHUNK = 55; // lines per unbreakable chunk
       listing.innerHTML = '<div class="print-code-title">Code Listing</div>' +
         files.map(([name, src]) => {
           const lines = src.split('\n');
