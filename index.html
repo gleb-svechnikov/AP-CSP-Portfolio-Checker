@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AP CSP Portfolio Checker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+/* ── Reset & Base ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #f7f6f2;
+  --surface: #ffffff;
+  --surface2: #f0efe9;
+  --border: #e2e0d8;
+  --border2: #ccc9bc;
+  --text: #1c1b18;
+  --muted: #6b6960;
+  --faint: #9b9890;
+  --accent: #4f46e5;
+  --accent-bg: #eef2ff;
+  --accent-border: #c7d2fe;
+  --green: #16a34a;
+  --green-bg: #f0fdf4;
+  --green-border: #bbf7d0;
+  --red: #dc2626;
+  --red-bg: #fef2f2;
+  --red-border: #fecaca;
+  --amber: #d97706;
+  --amber-bg: #fffbeb;
+  --amber-border: #fde68a;
+  --radius: 10px;
+  --radius-sm: 6px;
+  --mono: 'DM Mono', monospace;
+  --sans: 'DM Sans', sans-serif;
+}
+html { font-family: var(--sans); background: var(--bg); color: var(--text); font-size: 15px; line-height: 1.6; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* ── Layout ── */
+.app { max-width: 880px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+
+/* ── Header ── */
+.site-header { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 2rem; padding-bottom: 1.25rem; border-bottom: 1px solid var(--border); }
+.logo { display: flex; align-items: center; gap: 10px; }
+.logo-mark { width: 36px; height: 36px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+.logo-mark svg { fill: white; width: 20px; height: 20px; }
+.logo-text h1 { font-size: 17px; font-weight: 600; letter-spacing: -0.3px; }
+.logo-text p { font-size: 12px; color: var(--muted); }
+.badge-cb { font-size: 11px; font-weight: 500; background: var(--accent-bg); color: var(--accent); border: 1px solid var(--accent-border); border-radius: 100px; padding: 3px 10px; }
+
+/* ── Search bar ── */
+.search-area { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; margin-bottom: 1.5rem; }
+.search-area h2 { font-size: 14px; font-weight: 600; margin-bottom: .75rem; }
+.input-row { display: flex; gap: 8px; }
+.input-row input {
+  flex: 1; height: 42px; padding: 0 14px; font-family: var(--mono); font-size: 13px;
+  border: 1px solid var(--border2); border-radius: var(--radius-sm);
+  background: var(--bg); color: var(--text); outline: none; transition: border-color .15s;
+}
+.input-row input:focus { border-color: var(--accent); }
+.btn { height: 42px; padding: 0 20px; font-family: var(--sans); font-size: 14px; font-weight: 500; border-radius: var(--radius-sm); border: none; cursor: pointer; transition: opacity .15s, background .15s; }
+.btn-primary { background: var(--accent); color: white; }
+.btn-primary:hover { opacity: .9; }
+.btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+.btn-ghost { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+.btn-ghost:hover { background: var(--border); }
+
+/* batch area */
+.batch-toggle { font-size: 12px; color: var(--muted); cursor: pointer; margin-top: 8px; display: inline-block; }
+.batch-toggle:hover { color: var(--accent); }
+#batchArea { display: none; margin-top: 10px; }
+#batchArea textarea { width: 100%; height: 110px; padding: 10px 12px; font-family: var(--mono); font-size: 12px; border: 1px solid var(--border2); border-radius: var(--radius-sm); background: var(--bg); color: var(--text); resize: vertical; outline: none; }
+#batchArea textarea:focus { border-color: var(--accent); }
+
+/* ── Tabs ── */
+.tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); margin-bottom: 1.5rem; }
+.tab { padding: 9px 18px; font-size: 13px; font-weight: 500; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: color .15s; white-space: nowrap; }
+.tab:hover { color: var(--text); }
+.tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+.tab-badge { display: inline-block; margin-left: 6px; font-size: 11px; background: var(--surface2); border-radius: 100px; padding: 1px 7px; color: var(--muted); }
+.tab.active .tab-badge { background: var(--accent-bg); color: var(--accent); }
+
+/* ── Sections ── */
+.section { display: none; }
+.section.active { display: block; }
+
+/* ── Loading / Empty ── */
+.loading { text-align: center; padding: 3rem 1rem; }
+.spinner { width: 28px; height: 28px; border: 2px solid var(--border2); border-top-color: var(--accent); border-radius: 50%; animation: spin .7s linear infinite; margin: 0 auto 14px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading p { font-size: 14px; color: var(--muted); }
+.empty { text-align: center; padding: 4rem 1rem; color: var(--muted); font-size: 14px; }
+.empty-icon { font-size: 40px; margin-bottom: 14px; opacity: .5; }
+
+/* ── Alert ── */
+.alert { padding: 10px 14px; border-radius: var(--radius-sm); font-size: 13px; margin-bottom: 1.25rem; }
+.alert-err { background: var(--red-bg); color: var(--red); border: 1px solid var(--red-border); }
+.alert-info { background: var(--accent-bg); color: var(--accent); border: 1px solid var(--accent-border); }
+.alert-success { background: var(--green-bg); color: var(--green); border: 1px solid var(--green-border); }
+
+/* ── Repo meta strip ── */
+.meta-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-bottom: 1.25rem; }
+.meta-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 14px; }
+.meta-val { font-size: 20px; font-weight: 600; color: var(--text); }
+.meta-key { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+/* ── Score banner ── */
+.score-banner { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem 1.5rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap; }
+.score-circle { width: 72px; height: 72px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0; border: 3px solid var(--accent); }
+.score-num { font-size: 22px; font-weight: 600; line-height: 1; }
+.score-denom { font-size: 11px; color: var(--muted); }
+.score-info { flex: 1; min-width: 180px; }
+.score-info h3 { font-size: 16px; font-weight: 600; }
+.score-info p { font-size: 13px; color: var(--muted); }
+.progress-wrap { margin-top: 8px; }
+.progress-track { height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; }
+.progress-fill { height: 100%; border-radius: 3px; background: var(--accent); transition: width .5s ease; }
+.score-pct { font-size: 28px; font-weight: 600; }
+
+/* ── Requirement cards ── */
+.req-grid { display: grid; gap: 8px; }
+.req-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem 1.25rem; border-left-width: 3px; }
+.req-card.pass { border-left-color: var(--green); }
+.req-card.warn { border-left-color: var(--amber); }
+.req-card.fail { border-left-color: var(--red); }
+.req-head { display: flex; align-items: flex-start; gap: 10px; }
+.req-badge { font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 100px; flex-shrink: 0; margin-top: 1px; }
+.badge-pass { background: var(--green-bg); color: var(--green); }
+.badge-warn { background: var(--amber-bg); color: var(--amber); }
+.badge-fail { background: var(--red-bg); color: var(--red); }
+.req-title { font-size: 14px; font-weight: 500; }
+.req-cat { font-size: 11px; color: var(--faint); margin-top: 1px; }
+.req-detail { font-size: 13px; color: var(--muted); margin-top: 8px; line-height: 1.55; }
+
+/* ── Code viewer ── */
+.code-file { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 10px; overflow: hidden; }
+.code-file-header { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-bottom: 1px solid var(--border); background: var(--surface2); }
+.code-filename { font-family: var(--mono); font-size: 13px; font-weight: 500; }
+.code-lines { font-size: 12px; color: var(--muted); }
+.code-link { margin-left: auto; font-size: 12px; }
+.code-body { padding: 1rem; overflow-x: auto; }
+.code-body pre { font-family: var(--mono); font-size: 12px; line-height: 1.65; color: var(--text); white-space: pre; max-height: 340px; overflow-y: auto; }
+
+/* ── PDF form ── */
+.pdf-form { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; }
+.pdf-form h3 { font-size: 15px; font-weight: 600; margin-bottom: 1rem; }
+.form-grid { display: grid; gap: 12px; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.form-group { display: flex; flex-direction: column; gap: 5px; }
+.form-group label { font-size: 12px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; }
+.form-group input,
+.form-group textarea,
+.form-group select {
+  padding: 9px 12px; font-family: var(--sans); font-size: 14px;
+  border: 1px solid var(--border2); border-radius: var(--radius-sm);
+  background: var(--bg); color: var(--text); outline: none; transition: border-color .15s;
+}
+.form-group textarea { resize: vertical; min-height: 90px; line-height: 1.55; }
+.form-group input:focus,
+.form-group textarea:focus { border-color: var(--accent); }
+.form-section-title { font-size: 13px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-top: 4px; padding-top: 14px; border-top: 1px solid var(--border); }
+.pdf-actions { display: flex; gap: 10px; margin-top: 1.25rem; flex-wrap: wrap; }
+.btn-pdf { height: 42px; padding: 0 24px; font-family: var(--sans); font-size: 14px; font-weight: 500; border-radius: var(--radius-sm); cursor: pointer; transition: opacity .15s; }
+.btn-generate { background: var(--accent); color: white; border: none; }
+.btn-generate:hover { opacity: .88; }
+.btn-print { background: var(--surface2); color: var(--text); border: 1px solid var(--border2); }
+.btn-print:hover { background: var(--border); }
+
+/* ── Batch dashboard ── */
+.class-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.class-table th { text-align: left; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .4px; color: var(--muted); padding: 8px 12px; border-bottom: 1px solid var(--border); }
+.class-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+.class-table tr:last-child td { border-bottom: none; }
+.class-table tr:hover td { background: var(--surface2); }
+.pill { display: inline-block; font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 100px; }
+.pill-pass { background: var(--green-bg); color: var(--green); }
+.pill-warn { background: var(--amber-bg); color: var(--amber); }
+.pill-fail { background: var(--red-bg); color: var(--red); }
+.mini-bar { height: 4px; background: var(--border); border-radius: 2px; width: 80px; overflow: hidden; margin-top: 4px; }
+.mini-fill { height: 100%; border-radius: 2px; }
+.scan-row td { color: var(--muted); font-style: italic; }
+
+/* ── AI suggestions area ── */
+.ai-box { background: var(--accent-bg); border: 1px solid var(--accent-border); border-radius: var(--radius); padding: 1.25rem; margin-top: 1rem; }
+.ai-box h4 { font-size: 13px; font-weight: 600; color: var(--accent); margin-bottom: 8px; }
+.ai-box p { font-size: 13px; color: var(--text); line-height: 1.6; white-space: pre-wrap; }
+.ai-thinking { font-size: 13px; color: var(--muted); font-style: italic; }
+
+/* ── Responsive ── */
+@media (max-width: 600px) {
+  .form-row { grid-template-columns: 1fr; }
+  .score-banner { gap: 1rem; }
+  .site-header { flex-direction: column; align-items: flex-start; gap: 8px; }
+}
+
+/* ── Print styles ── */
+@media print {
+  .no-print { display: none !important; }
+  body { background: white; }
+  .app { padding: 0; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- Header -->
+  <header class="site-header no-print">
+    <div class="logo">
+      <div class="logo-mark">
+        <svg viewBox="0 0 20 20"><path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9zM4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm9.707 5.707a1 1 0 00-1.414-1.414L9 12.586l-1.293-1.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"/></svg>
+      </div>
+      <div class="logo-text">
+        <h1>AP CSP Portfolio Checker</h1>
+        <p>College Board Create PT · Digital Portfolio Tool</p>
+      </div>
+    </div>
+    <span class="badge-cb">2025–2026 Rubric</span>
+  </header>
+
+  <!-- Search -->
+  <div class="search-area no-print">
+    <h2>Analyze a student repository</h2>
+    <div class="input-row">
+      <input id="repoUrl" type="url" placeholder="https://github.com/username/repo-name" spellcheck="false" />
+      <button class="btn btn-primary" id="analyzeBtn" onclick="analyzeSingle()">Analyze</button>
+    </div>
+    <span class="batch-toggle" onclick="toggleBatch()">⊞ Batch mode — paste multiple repos for whole-class analysis</span>
+    <div id="batchArea">
+      <textarea id="batchUrls" placeholder="https://github.com/student1/project&#10;https://github.com/student2/project&#10;https://github.com/student3/project&#10;One URL per line"></textarea>
+      <div style="display:flex;gap:8px;margin-top:8px;">
+        <button class="btn btn-primary" onclick="analyzeBatch()">Analyze All</button>
+        <button class="btn btn-ghost" onclick="document.getElementById('batchUrls').value=''">Clear</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="errorBox"></div>
+  <div id="loadingBox" style="display:none" class="loading no-print">
+    <div class="spinner"></div>
+    <p id="loadingMsg">Fetching repository…</p>
+  </div>
+
+  <!-- Main tabs -->
+  <div id="mainContent" style="display:none">
+    <div class="tabs no-print">
+      <div class="tab active" onclick="switchTab('overview',this)">Overview</div>
+      <div class="tab" onclick="switchTab('requirements',this)">Requirements <span class="tab-badge" id="reqBadge">10</span></div>
+      <div class="tab" onclick="switchTab('code',this)">Code</div>
+      <div class="tab" onclick="switchTab('portfolio',this)">Portfolio PDF</div>
+      <div class="tab" id="dashTab" style="display:none" onclick="switchTab('dashboard',this)">Class Dashboard <span class="tab-badge" id="dashBadge">0</span></div>
+    </div>
+
+    <div id="tab-overview" class="section active">
+      <div class="meta-strip" id="repoMeta"></div>
+      <div class="score-banner" id="scoreBanner"></div>
+      <div id="overviewChecks" class="req-grid"></div>
+    </div>
+
+    <div id="tab-requirements" class="section">
+      <div id="allRequirements" class="req-grid"></div>
+    </div>
+
+    <div id="tab-code" class="section">
+      <div id="codePanel"></div>
+    </div>
+
+    <div id="tab-portfolio" class="section">
+      <div class="pdf-form">
+        <h3>Digital Portfolio — Written Responses</h3>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:1rem">Fill in the sections below. Fields marked with a repo icon are pre-filled from the repository analysis. Click <strong>Generate PDF</strong> to download a print-ready document.</p>
+        <div class="form-grid">
+          <div class="form-row">
+            <div class="form-group"><label>Student name</label><input id="pdf_name" placeholder="Full name" /></div>
+            <div class="form-group"><label>Teacher</label><input id="pdf_teacher" placeholder="Teacher name" /></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>AP Exam year</label><input id="pdf_year" value="2026" /></div>
+            <div class="form-group"><label>Period / class</label><input id="pdf_period" placeholder="e.g. Period 3" /></div>
+          </div>
+
+          <div class="form-section-title">Written Responses</div>
+
+          <div class="form-group">
+            <label>3a — Program purpose &amp; function</label>
+            <textarea id="pdf_3a" placeholder="Describe the overall purpose of your program. What does it do? What problem does it solve or need does it address?"></textarea>
+            <button class="btn btn-ghost" style="margin-top:6px;height:34px;font-size:12px;" onclick="aiSuggest('3a')">✦ Suggest with AI</button>
+            <div id="ai_3a"></div>
+          </div>
+
+          <div class="form-group">
+            <label>3b — Video description</label>
+            <textarea id="pdf_3b" placeholder="Describe what is shown in your video. What input does the user provide? What output does the program produce?"></textarea>
+            <button class="btn btn-ghost" style="margin-top:6px;height:34px;font-size:12px;" onclick="aiSuggest('3b')">✦ Suggest with AI</button>
+            <div id="ai_3b"></div>
+          </div>
+
+          <div class="form-group">
+            <label>3c — List / data abstraction</label>
+            <textarea id="pdf_3c" placeholder="Name your list or collection. What data does it store? How does it manage complexity that would be difficult without a list?"></textarea>
+            <button class="btn btn-ghost" style="margin-top:6px;height:34px;font-size:12px;" onclick="aiSuggest('3c')">✦ Suggest with AI</button>
+            <div id="ai_3c"></div>
+          </div>
+
+          <div class="form-group">
+            <label>3d — Procedure / algorithm</label>
+            <textarea id="pdf_3d" placeholder="Name your procedure. What are its parameters? Describe the algorithm including sequencing, selection, and iteration."></textarea>
+            <button class="btn btn-ghost" style="margin-top:6px;height:34px;font-size:12px;" onclick="aiSuggest('3d')">✦ Suggest with AI</button>
+            <div id="ai_3d"></div>
+          </div>
+        </div>
+
+        <div class="pdf-actions">
+          <button class="btn-pdf btn-generate" onclick="generatePDF()">↓ Download Portfolio PDF</button>
+          <button class="btn-pdf btn-print" onclick="window.print()">⎙ Print</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="tab-dashboard" class="section">
+      <div id="dashboardPanel"></div>
+    </div>
+  </div>
+
+  <div id="emptyState" class="empty">
+    <div class="empty-icon">◎</div>
+    <p>Enter a GitHub repository URL above to begin.</p>
+  </div>
+
+</div><!-- /app -->
+
+<script>
+/* ══════════════════════════════════════════════
+   State
+══════════════════════════════════════════════ */
+let repoData = {};
+let codeContent = {};
+let batchResults = [];
+
+/* ══════════════════════════════════════════════
+   UI helpers
+══════════════════════════════════════════════ */
+function switchTab(name, el) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  if (el) el.classList.add('active');
+  document.getElementById('tab-' + name).classList.add('active');
+}
+
+function toggleBatch() {
+  const area = document.getElementById('batchArea');
+  area.style.display = area.style.display === 'none' ? 'block' : 'none';
+}
+
+function showError(msg) {
+  document.getElementById('errorBox').innerHTML = `<div class="alert alert-err">${msg}</div>`;
+}
+
+function clearError() {
+  document.getElementById('errorBox').innerHTML = '';
+}
+
+function setLoading(on, msg) {
+  document.getElementById('loadingBox').style.display = on ? 'block' : 'none';
+  if (msg) document.getElementById('loadingMsg').textContent = msg;
+  document.getElementById('analyzeBtn').disabled = on;
+}
+
+/* ══════════════════════════════════════════════
+   GitHub API
+══════════════════════════════════════════════ */
+function parseRepo(url) {
+  const m = url.trim().replace(/\/$/, '').match(/github\.com\/([^\/\s]+)\/([^\/\s]+)/);
+  return m ? { owner: m[1], repo: m[2].replace(/\.git$/, '') } : null;
+}
+
+async function ghFetch(path) {
+  const r = await fetch('https://api.github.com' + path, {
+    headers: { 'Accept': 'application/vnd.github.v3+json' }
+  });
+  if (!r.ok) throw new Error('GitHub ' + r.status);
+  return r.json();
+}
+
+async function fetchText(url) {
+  const r = await fetch(url);
+  if (!r.ok) throw new Error('fetch failed');
+  return r.text();
+}
+
+async function loadRepo(parsed) {
+  const [infoRes, contentsRes, commitsRes] = await Promise.all([
+    ghFetch('/repos/' + parsed.owner + '/' + parsed.repo),
+    ghFetch('/repos/' + parsed.owner + '/' + parsed.repo + '/contents/'),
+    ghFetch('/repos/' + parsed.owner + '/' + parsed.repo + '/commits?per_page=30'),
+  ]);
+  let readmeText = '';
+  try {
+    const rm = await ghFetch('/repos/' + parsed.owner + '/' + parsed.repo + '/contents/README.md');
+    if (rm.content) readmeText = atob(rm.content.replace(/\n/g,''));
+  } catch(e) {}
+  return { info: infoRes, contents: contentsRes, commits: commitsRes, readmeText, parsed };
+}
+
+async function loadCodeFiles(data) {
+  const exts = ['.py','.js','.ts','.java','.cpp','.c','.cs','.rb','.go','.swift','.html','.php'];
+  const files = (data.contents || []).filter(f =>
+    f.type === 'file' && exts.some(e => f.name.toLowerCase().endsWith(e))
+  ).slice(0, 6);
+  const result = {};
+  for (const f of files) {
+    try { result[f.name] = await fetchText(f.download_url); }
+    catch(e) {}
+  }
+  return result;
+}
+
+/* ══════════════════════════════════════════════
+   Single analysis
+══════════════════════════════════════════════ */
+async function analyzeSingle() {
+  clearError();
+  const url = document.getElementById('repoUrl').value.trim();
+  if (!url) { showError('Please enter a GitHub repository URL.'); return; }
+  const parsed = parseRepo(url);
+  if (!parsed) { showError('Could not parse that URL. Make sure it looks like https://github.com/username/repo'); return; }
+
+  document.getElementById('emptyState').style.display = 'none';
+  document.getElementById('mainContent').style.display = 'none';
+  setLoading(true, 'Fetching repository…');
+
+  try {
+    setLoading(true, 'Loading files…');
+    repoData = await loadRepo(parsed);
+    setLoading(true, 'Reading code files…');
+    codeContent = await loadCodeFiles(repoData);
+    setLoading(false);
+    renderAll();
+    document.getElementById('mainContent').style.display = 'block';
+    switchTab('overview', document.querySelector('.tab'));
+  } catch(e) {
+    setLoading(false);
+    showError('Could not load repository. Is it public? Check the URL and try again. (' + e.message + ')');
+    document.getElementById('emptyState').style.display = 'block';
+  }
+}
+
+/* ══════════════════════════════════════════════
+   Batch analysis
+══════════════════════════════════════════════ */
+async function analyzeBatch() {
+  const raw = document.getElementById('batchUrls').value.trim();
+  const urls = raw.split('\n').map(u => u.trim()).filter(u => u.includes('github.com'));
+  if (!urls.length) { showError('No valid GitHub URLs found.'); return; }
+
+  clearError();
+  batchResults = [];
+  document.getElementById('emptyState').style.display = 'none';
+  document.getElementById('mainContent').style.display = 'block';
+  document.getElementById('dashTab').style.display = '';
+  switchTab('dashboard', document.getElementById('dashTab'));
+  document.getElementById('dashBadge').textContent = urls.length;
+
+  renderDashboardShell(urls);
+
+  for (let i = 0; i < urls.length; i++) {
+    const url = urls[i];
+    const parsed = parseRepo(url);
+    if (!parsed) { updateDashRow(i, null, url); continue; }
+    try {
+      const data = await loadRepo(parsed);
+      const code = await loadCodeFiles(data);
+      const checks = checkRequirements(data, code);
+      batchResults.push({ url, parsed, data, checks });
+      updateDashRow(i, { data, checks }, url);
+    } catch(e) {
+      updateDashRow(i, null, url);
+    }
+  }
+}
+
+function renderDashboardShell(urls) {
+  const rows = urls.map((u, i) => `
+    <tr id="dashrow-${i}" class="scan-row">
+      <td>${parseRepo(u) ? parseRepo(u).owner + '/' + parseRepo(u).repo : u}</td>
+      <td colspan="4"><span class="pill" style="background:var(--surface2);color:var(--muted)">Scanning…</span></td>
+    </tr>`).join('');
+  document.getElementById('dashboardPanel').innerHTML = `
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;">
+      <table class="class-table">
+        <thead><tr>
+          <th>Repository</th><th>Score</th><th>Video</th><th>Algorithm</th><th>Abstraction</th>
+        </tr></thead>
+        <tbody id="dashBody">${rows}</tbody>
+      </table>
+    </div>
+    <div id="classStats" style="margin-top:1rem"></div>`;
+}
+
+function updateDashRow(i, result, url) {
+  const row = document.getElementById('dashrow-' + i);
+  if (!row) return;
+  row.classList.remove('scan-row');
+  if (!result) {
+    row.innerHTML = `<td><a href="${url}" target="_blank">${url}</a></td><td colspan="4"><span class="pill pill-fail">Error</span></td>`;
+    return;
+  }
+  const { data, checks } = result;
+  const passed = checks.filter(c => c.status === 'pass').length;
+  const pct = Math.round(passed / checks.length * 100);
+  const color = pct >= 80 ? 'var(--green)' : pct >= 50 ? 'var(--amber)' : 'var(--red)';
+  const pillCls = pct >= 80 ? 'pill-pass' : pct >= 50 ? 'pill-warn' : 'pill-fail';
+  const get = id => checks.find(c => c.id === id);
+  const dot = id => { const c = get(id); return `<span class="pill ${c.status==='pass'?'pill-pass':c.status==='warn'?'pill-warn':'pill-fail'}">${c.status==='pass'?'✓':c.status==='warn'?'~':'✗'}</span>`; };
+
+  row.innerHTML = `
+    <td><a href="${data.info.html_url}" target="_blank">${data.parsed.owner}/${data.parsed.repo}</a></td>
+    <td>
+      <span class="pill ${pillCls}">${passed}/${checks.length}</span>
+      <div class="mini-bar"><div class="mini-fill" style="width:${pct}%;background:${color}"></div></div>
+    </td>
+    <td>${dot('video')}</td>
+    <td>${dot('algo')}</td>
+    <td>${dot('abstraction')}</td>`;
+
+  updateClassStats();
+}
+
+function updateClassStats() {
+  const completed = batchResults.length;
+  if (!completed) return;
+  const avg = Math.round(batchResults.reduce((s, r) => {
+    const p = r.checks.filter(c => c.status === 'pass').length;
+    return s + (p / r.checks.length * 100);
+  }, 0) / completed);
+  document.getElementById('classStats').innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px">
+      <div class="meta-card"><div class="meta-val">${completed}</div><div class="meta-key">Repos analyzed</div></div>
+      <div class="meta-card"><div class="meta-val">${avg}%</div><div class="meta-key">Avg requirements met</div></div>
+      <div class="meta-card"><div class="meta-val">${batchResults.filter(r=>r.checks.find(c=>c.id==='video').status==='pass').length}</div><div class="meta-key">Have video</div></div>
+      <div class="meta-card"><div class="meta-val">${batchResults.filter(r=>r.checks.find(c=>c.id==='algo').status==='pass').length}</div><div class="meta-key">Algorithm complete</div></div>
+    </div>`;
+}
+
+/* ══════════════════════════════════════════════
+   Requirements engine
+══════════════════════════════════════════════ */
+function checkRequirements(data, code) {
+  data = data || repoData;
+  code = code || codeContent;
+  const files = data.contents || [];
+  const commits = data.commits || [];
+  const src = Object.values(code).join('\n');
+  const info = data.info || {};
+  const readme = data.readmeText || '';
+  const res = [];
+
+  // 1 Video
+  const vidFile = files.find(f => /\.(mp4|mov|avi|webm|mkv|gif)$/i.test(f.name));
+  res.push({ id:'video', title:'Video demonstration included', category:'Artifacts',
+    status: vidFile ? 'pass' : 'fail',
+    detail: vidFile ? `Found: ${vidFile.name}` : 'No video file found. AP CSP requires a ≤1 minute video showing the program running with input and output.' });
+
+  // 2 README
+  const hasReadme = files.some(f => /readme/i.test(f.name));
+  res.push({ id:'readme', title:'README with project description', category:'Artifacts',
+    status: hasReadme ? (readme.length > 100 ? 'pass' : 'warn') : 'fail',
+    detail: hasReadme ? (readme.length > 100 ? 'README found with substantial content.' : 'README found but very short — consider expanding the project description.') : 'No README found.' });
+
+  // 3 Public repo
+  res.push({ id:'public', title:'Repository is public', category:'Repository',
+    status: !info.private ? 'pass' : 'fail',
+    detail: !info.private ? 'Repository is publicly accessible.' : 'Repository is private — it must be public for the portfolio submission.' });
+
+  // 4 Sequencing
+  const lines = src.split('\n').filter(l => l.trim().length > 2);
+  res.push({ id:'sequence', title:'Sequencing — multiple ordered statements', category:'Program Code',
+    status: lines.length >= 10 ? 'pass' : lines.length >= 3 ? 'warn' : 'fail',
+    detail: `${lines.length} non-empty code lines detected. AP CSP requires a program with meaningful sequential execution.` });
+
+  // 5 Selection
+  const hasBranch = /\bif\b|\belif\b|\belse\b|\bmatch\b|\bcase\b|\bswitch\b|\bwhen\b/.test(src);
+  res.push({ id:'selection', title:'Selection — conditional logic (if/else)', category:'Program Code',
+    status: hasBranch ? 'pass' : 'fail',
+    detail: hasBranch ? 'Conditional statements detected (if/elif/else or match/case).' : 'No conditional statements found. Must include if/else or equivalent.' });
+
+  // 6 Iteration
+  const hasLoop = /\bfor\b|\bwhile\b|\bloop\b|\beach\b|\bforEach\b/.test(src);
+  res.push({ id:'iteration', title:'Iteration — loop construct', category:'Program Code',
+    status: hasLoop ? 'pass' : 'fail',
+    detail: hasLoop ? 'Loop construct detected (for/while).' : 'No loops found. The algorithm must include iteration (for or while loop).' });
+
+  // 7 Procedure with parameter
+  const hasProcParam = /def\s+\w+\s*\([^)]*\w[^)]*\)|function\s+\w+\s*\([^)]*\w[^)]*\)|void\s+\w+\s*\([^)]+\)|public\s+\w+\s+\w+\s*\([^)]+\)/.test(src);
+  const hasProc = /def |function |void |proc /.test(src);
+  res.push({ id:'abstraction', title:'Procedure/function with parameter(s)', category:'Program Code',
+    status: hasProcParam ? 'pass' : hasProc ? 'warn' : 'fail',
+    detail: hasProcParam ? 'Procedure with parameter(s) detected — satisfies abstraction requirement.' :
+      hasProc ? 'Procedure found but may not have parameters. AP CSP requires at least one procedure with ≥1 parameter.' :
+      'No procedures/functions found. Must define at least one with parameter(s).' });
+
+  // 8 List / data abstraction
+  const hasList = /\[.*\]/.test(src) || /list\(|ArrayList|vector<|\[\]/.test(src);
+  res.push({ id:'list', title:'List or collection for data abstraction', category:'Program Code',
+    status: hasList ? 'pass' : 'fail',
+    detail: hasList ? 'List/array/collection detected — satisfies data abstraction requirement.' : 'No list or collection detected. Must manage a collection of data using a list, array, or equivalent.' });
+
+  // 9 Input
+  const hasInput = /input\(|prompt\(|readline|Scanner|argv|sys\.argv|\bevent\b|\bonclick\b|\bonkey/i.test(src);
+  res.push({ id:'input', title:'Program accepts user input', category:'Program Code',
+    status: hasInput ? 'pass' : 'warn',
+    detail: hasInput ? 'User input handling detected.' : 'No explicit input handling detected. Programs should respond to user input or events.' });
+
+  // 10 Commit history
+  const n = commits.length;
+  res.push({ id:'commits', title:'Commit history (development evidence)', category:'Repository',
+    status: n >= 3 ? 'pass' : n >= 1 ? 'warn' : 'fail',
+    detail: `${n} commit(s). ${n < 3 ? 'More commits help demonstrate an iterative development process.' : 'Good commit history showing development over time.'}` });
+
+  return res;
+}
+
+/* ══════════════════════════════════════════════
+   Render
+══════════════════════════════════════════════ */
+function renderAll() {
+  const info = repoData.info || {};
+  const commits = repoData.commits || [];
+  const checks = checkRequirements();
+  const passed = checks.filter(c => c.status === 'pass').length;
+  const pct = Math.round(passed / checks.length * 100);
+  const color = pct >= 80 ? 'var(--green)' : pct >= 50 ? 'var(--amber)' : 'var(--red)';
+
+  document.getElementById('reqBadge').textContent = checks.length;
+
+  // Meta
+  const updated = info.updated_at ? new Date(info.updated_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '—';
+  document.getElementById('repoMeta').innerHTML = `
+    <div class="meta-card"><div class="meta-val">${info.language||'—'}</div><div class="meta-key">Language</div></div>
+    <div class="meta-card"><div class="meta-val">${commits.length}</div><div class="meta-key">Commits</div></div>
+    <div class="meta-card"><div class="meta-val">${(repoData.contents||[]).length}</div><div class="meta-key">Files</div></div>
+    <div class="meta-card"><div class="meta-val">${updated}</div><div class="meta-key">Last updated</div></div>`;
+
+  // Score banner
+  document.getElementById('scoreBanner').innerHTML = `
+    <div class="score-circle" style="border-color:${color}">
+      <span class="score-num" style="color:${color}">${passed}</span>
+      <span class="score-denom">/ ${checks.length}</span>
+    </div>
+    <div class="score-info">
+      <h3>${info.name || repoData.parsed.repo}</h3>
+      <p>by ${repoData.parsed.owner} · <a href="${info.html_url}" target="_blank">View on GitHub ↗</a></p>
+      <div class="progress-wrap">
+        <div class="progress-track"><div class="progress-fill" style="width:${pct}%;background:${color}"></div></div>
+      </div>
+    </div>
+    <div><span class="score-pct" style="color:${color}">${pct}%</span><div style="font-size:12px;color:var(--muted)">requirements met</div></div>`;
+
+  // Overview (critical subset)
+  const critical = checks.filter(c => ['video','abstraction','list','selection','iteration'].includes(c.id));
+  document.getElementById('overviewChecks').innerHTML = critical.map(reqCard).join('');
+
+  // All requirements
+  document.getElementById('allRequirements').innerHTML = checks.map(reqCard).join('');
+
+  // Code
+  renderCode();
+}
+
+function reqCard(c) {
+  const labels = { pass:'Met', warn:'Partial', fail:'Missing' };
+  return `
+    <div class="req-card ${c.status}">
+      <div class="req-head">
+        <span class="req-badge badge-${c.status}">${labels[c.status]}</span>
+        <div>
+          <div class="req-title">${c.title}</div>
+          <div class="req-cat">${c.category}</div>
+        </div>
+      </div>
+      <div class="req-detail">${c.detail}</div>
+    </div>`;
+}
+
+function renderCode() {
+  const files = repoData.contents || [];
+  const exts = ['.py','.js','.ts','.java','.cpp','.c','.cs','.rb','.go','.swift','.html','.php'];
+  const codeFiles = files.filter(f => f.type === 'file' && exts.some(e => f.name.toLowerCase().endsWith(e)));
+
+  if (!codeFiles.length) {
+    document.getElementById('codePanel').innerHTML = '<div class="empty"><div class="empty-icon">⊘</div><p>No code files found.</p></div>';
+    return;
+  }
+
+  document.getElementById('codePanel').innerHTML = codeFiles.map(f => {
+    const txt = codeContent[f.name] || '';
+    const lines = txt ? txt.split('\n').length : '—';
+    const preview = txt ? escHtml(txt.slice(0, 2500)) + (txt.length > 2500 ? '\n…' : '') : '<em style="color:var(--muted)">Could not load file content.</em>';
+    return `
+      <div class="code-file">
+        <div class="code-file-header">
+          <span class="code-filename">${f.name}</span>
+          <span class="code-lines">${lines} lines</span>
+          <a class="code-link" href="${f.html_url}" target="_blank">View on GitHub ↗</a>
+        </div>
+        <div class="code-body"><pre>${preview}</pre></div>
+      </div>`;
+  }).join('');
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+/* ══════════════════════════════════════════════
+   AI suggestions (calls Anthropic API)
+══════════════════════════════════════════════ */
+const prompts = {
+  '3a': `You are helping an AP Computer Science Principles student write their Create Performance Task written response for section 3a: "Program purpose and function."
+
+Here is the student's code:
+{CODE}
+
+README:
+{README}
+
+Write a clear, honest 2-3 sentence response in first person that describes the purpose of the program, what it does, and what input/output it uses. Match the actual code — do not invent features. Be concise.`,
+
+  '3b': `You are helping an AP CSP student write section 3b of their Create PT: describing what their video shows.
+
+Here is the student's code:
+{CODE}
+
+Write a 2-3 sentence response describing what a 1-minute video of this program running would show — specifically what the user inputs and what outputs the program produces. Be concrete and accurate.`,
+
+  '3c': `You are helping an AP CSP student write section 3c of their Create PT: explaining their list/collection and how it manages complexity.
+
+Here is the student's code:
+{CODE}
+
+Identify the list or collection in the code and write 2-3 sentences explaining: (1) what the list is named and what data it stores, (2) how the program uses the list, and (3) why using a list makes the program simpler than it would be without one.`,
+
+  '3d': `You are helping an AP CSP student write section 3d of their Create PT: describing a procedure and its algorithm.
+
+Here is the student's code:
+{CODE}
+
+Identify a meaningful procedure/function in the code and write 3-4 sentences explaining: (1) its name and parameter(s), (2) what it does, and (3) how the algorithm includes sequencing, selection, and iteration. Be specific and reference actual code details.`
+};
+
+async function aiSuggest(section) {
+  const box = document.getElementById('ai_' + section);
+  const src = Object.values(codeContent).join('\n\n').slice(0, 3000);
+  const readme = repoData.readmeText || '';
+
+  if (!src) { box.innerHTML = '<div class="alert alert-err">No code found in repo to analyze.</div>'; return; }
+
+  box.innerHTML = '<div class="ai-box"><p class="ai-thinking">Analyzing code and generating suggestion…</p></div>';
+
+  const prompt = prompts[section]
+    .replace('{CODE}', src)
+    .replace('{README}', readme);
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-calls': 'true' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 400,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const data = await res.json();
+    const text = data.content && data.content[0] ? data.content[0].text : 'No response.';
+    box.innerHTML = `
+      <div class="ai-box">
+        <h4>✦ AI suggestion — review and edit before submitting</h4>
+        <p>${escHtml(text)}</p>
+        <button class="btn btn-ghost" style="margin-top:10px;height:32px;font-size:12px;" onclick="useAiSuggestion('${section}', this)">Use this →</button>
+      </div>`;
+  } catch(e) {
+    box.innerHTML = '<div class="alert alert-err">AI suggestion failed. Check your connection and try again.</div>';
+  }
+}
+
+function useAiSuggestion(section, btn) {
+  const text = btn.parentElement.querySelector('p').textContent;
+  document.getElementById('pdf_' + section).value = text;
+  btn.textContent = 'Applied ✓';
+  btn.disabled = true;
+}
+
+/* ══════════════════════════════════════════════
+   PDF generation (print-ready HTML file)
+══════════════════════════════════════════════ */
+function generatePDF() {
+  const get = id => document.getElementById(id).value.trim();
+  const name    = get('pdf_name') || 'Student';
+  const teacher = get('pdf_teacher') || '—';
+  const year    = get('pdf_year') || '2026';
+  const period  = get('pdf_period') || '—';
+  const r3a = get('pdf_3a') || '[Not completed]';
+  const r3b = get('pdf_3b') || '[Not completed]';
+  const r3c = get('pdf_3c') || '[Not completed]';
+  const r3d = get('pdf_3d') || '[Not completed]';
+  const info = repoData.info || {};
+  const checks = checkRequirements();
+  const passed = checks.filter(c => c.status === 'pass').length;
+  const pct = Math.round(passed / checks.length * 100);
+
+  const statusIcon = s => s === 'pass' ? '✓' : s === 'warn' ? '◑' : '✗';
+  const statusColor = s => s === 'pass' ? '#16a34a' : s === 'warn' ? '#d97706' : '#dc2626';
+
+  const html = `<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/>
+<title>AP CSP Portfolio — ${name}</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono&display=swap');
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'DM Sans',Georgia,sans-serif;color:#1c1b18;line-height:1.65;padding:48px;font-size:14px;background:#fff}
+  h1{font-size:20px;font-weight:600;letter-spacing:-.3px}
+  h2{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:#6b6960;margin:28px 0 10px;padding-bottom:6px;border-bottom:1px solid #e2e0d8}
+  .header{border-bottom:2px solid #4f46e5;padding-bottom:18px;margin-bottom:24px;display:flex;justify-content:space-between;align-items:flex-end}
+  .meta-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
+  .meta-card{background:#f7f6f2;border-radius:6px;padding:12px;border:1px solid #e2e0d8}
+  .meta-val{font-size:18px;font-weight:600}
+  .meta-key{font-size:11px;color:#6b6960;margin-top:2px}
+  .score-box{background:#eef2ff;border:1px solid #c7d2fe;border-radius:8px;padding:16px 20px;display:flex;align-items:center;gap:20px;margin-bottom:24px}
+  .score-big{font-size:36px;font-weight:600;color:#4f46e5}
+  .score-label{font-size:13px;color:#6b6960}
+  .response-box{background:#f7f6f2;border:1px solid #e2e0d8;border-radius:6px;padding:14px 16px;font-size:14px;line-height:1.7;white-space:pre-wrap;margin-top:6px}
+  .question{font-size:13px;font-weight:500;color:#1c1b18;margin-bottom:4px}
+  .check-grid{display:grid;gap:8px;margin-top:10px}
+  .check-item{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border-radius:6px;border:1px solid #e2e0d8}
+  .check-icon{font-size:15px;font-weight:600;flex-shrink:0;line-height:1.4}
+  .check-title{font-size:13px;font-weight:500}
+  .check-detail{font-size:12px;color:#6b6960;margin-top:2px}
+  .footer{margin-top:40px;padding-top:16px;border-top:1px solid #e2e0d8;font-size:11px;color:#9b9890;display:flex;justify-content:space-between}
+  @page{margin:1.5cm}
+  @media print{body{padding:0}}
+</style></head><body>
+<div class="header">
+  <div>
+    <h1>AP Computer Science Principles</h1>
+    <p style="font-size:13px;color:#6b6960;margin-top:3px">Create Performance Task — Digital Portfolio Submission</p>
+  </div>
+  <p style="font-size:13px;color:#6b6960">Exam Year: <strong>${year}</strong></p>
+</div>
+
+<div class="meta-grid">
+  <div class="meta-card"><div class="meta-val">${name}</div><div class="meta-key">Student</div></div>
+  <div class="meta-card"><div class="meta-val">${teacher}</div><div class="meta-key">Teacher</div></div>
+  <div class="meta-card"><div class="meta-val">${period}</div><div class="meta-key">Period</div></div>
+  <div class="meta-card"><div class="meta-val">${info.name || repoData.parsed?.repo || '—'}</div><div class="meta-key">Repository</div></div>
+</div>
+
+<div class="score-box">
+  <div class="score-big">${passed}/${checks.length}</div>
+  <div>
+    <div style="font-size:15px;font-weight:600">${pct}% of AP CSP requirements detected</div>
+    <div class="score-label">${info.html_url || ''}</div>
+  </div>
+</div>
+
+<h2>Written Responses</h2>
+
+<p class="question">3a. Describe the overall purpose of the program.</p>
+<div class="response-box">${escHtml(r3a)}</div>
+
+<p class="question" style="margin-top:16px">3b. Describe what is shown in the video.</p>
+<div class="response-box">${escHtml(r3b)}</div>
+
+<p class="question" style="margin-top:16px">3c. Describe the list/collection and how it manages complexity.</p>
+<div class="response-box">${escHtml(r3c)}</div>
+
+<p class="question" style="margin-top:16px">3d. Describe the procedure and algorithm.</p>
+<div class="response-box">${escHtml(r3d)}</div>
+
+<h2>Requirements Checklist</h2>
+<div class="check-grid">
+${checks.map(c => `
+  <div class="check-item" style="border-left:3px solid ${statusColor(c.status)}">
+    <span class="check-icon" style="color:${statusColor(c.status)}">${statusIcon(c.status)}</span>
+    <div>
+      <div class="check-title">${c.title} <span style="font-size:11px;color:#9b9890;font-weight:400">(${c.category})</span></div>
+      <div class="check-detail">${c.detail}</div>
+    </div>
+  </div>`).join('')}
+</div>
+
+<div class="footer">
+  <span>Generated by AP CSP Portfolio Checker · ${new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})}</span>
+  <span>${info.html_url || ''}</span>
+</div>
+</body></html>`;
+
+  const blob = new Blob([html], { type: 'text/html' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = (name.replace(/\s+/g, '-').toLowerCase() || 'student') + '-ap-csp-portfolio.html';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+/* ── Enter key on input ── */
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('repoUrl').addEventListener('keydown', e => {
+    if (e.key === 'Enter') analyzeSingle();
+  });
+});
+</script>
+</body>
+</html>
