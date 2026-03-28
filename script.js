@@ -2,6 +2,10 @@ let repoData = {};
 let codeContent = {};
 let batchResults = [];
 
+/* ── GitHub token (stored in localStorage, never in source) ── */
+const TOKEN_KEY = 'gh_pat';
+function getToken() { return localStorage.getItem(TOKEN_KEY) || ''; }
+
 function switchTab(name, el) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
@@ -15,7 +19,10 @@ function toggleBatch() {
 }
 
 function showError(msg) {
-  document.getElementById('errorBox').innerHTML = `<div class="alert alert-err">${msg}</div>`;
+  const isRateLimit = msg.includes('rate_limit') || msg.includes('403') || msg.includes('429');
+  document.getElementById('errorBox').innerHTML = `<div class="alert alert-err">${
+    isRateLimit ? 'GitHub API rate limit exceeded. Add a token named "gh_pat" to localStorage to authenticate (5,000 req/hr).' : msg
+  }</div>`;
 }
 
 function clearError() { document.getElementById('errorBox').innerHTML = ''; }
@@ -32,7 +39,16 @@ function parseRepo(url) {
 }
 
 async function ghFetch(path) {
-  const r = await fetch('https://api.github.com' + path, { headers: { 'Accept': 'application/vnd.github.v3+json' } });
+  const headers = { 'Accept': 'application/vnd.github.v3+json' };
+  const token = getToken();
+  if (token) headers['Authorization'] = 'token ' + token;
+  const r = await fetch('https://api.github.com' + path, { headers });
+  if (r.status === 403 || r.status === 429) {
+    const remaining = r.headers.get('X-RateLimit-Remaining');
+    if (remaining === '0' || r.status === 429) {
+      throw new Error('rate_limit');
+    }
+  }
   if (!r.ok) throw new Error('GitHub ' + r.status);
   return r.json();
 }
@@ -123,10 +139,10 @@ function renderDashboardShell(urls) {
   const rows = urls.map((u, i) => `
     <tr id="dashrow-${i}" class="scan-row">
       <td>${parseRepo(u) ? parseRepo(u).owner + '/' + parseRepo(u).repo : u}</td>
-      <td colspan="4"><span class="pill" style="background:var(--surface2);color:var(--muted)">Scanning…</span></td>
+      <td colspan="4"><span class="pill" style="color:GrayText">Scanning…</span></td>
     </tr>`).join('');
   document.getElementById('dashboardPanel').innerHTML = `
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;">
+    <div style="background:Canvas;border:1px solid ButtonBorder;border-radius:10px;overflow:hidden;">
       <table class="class-table">
         <thead><tr><th>Repository</th><th>Score</th><th>Video</th><th>Algorithm</th><th>Abstraction</th></tr></thead>
         <tbody id="dashBody">${rows}</tbody>
@@ -146,7 +162,7 @@ function updateDashRow(i, result, url) {
   const { data, checks } = result;
   const passed = checks.filter(c => c.status === 'pass').length;
   const pct = Math.round(passed / checks.length * 100);
-  const color = pct >= 80 ? 'var(--green)' : pct >= 50 ? 'var(--amber)' : 'var(--red)';
+  const color = pct >= 80 ? 'green' : pct >= 50 ? 'goldenrod' : 'red';
   const pillCls = pct >= 80 ? 'pill-pass' : pct >= 50 ? 'pill-warn' : 'pill-fail';
   const dot = id => { const c = checks.find(c => c.id === id); return `<span class="pill ${c.status==='pass'?'pill-pass':c.status==='warn'?'pill-warn':'pill-fail'}">${c.status==='pass'?'✓':c.status==='warn'?'~':'✗'}</span>`; };
   row.innerHTML = `
@@ -262,7 +278,7 @@ function renderAll() {
   const checks = checkRequirements();
   const passed = checks.filter(c => c.status === 'pass').length;
   const pct = Math.round(passed / checks.length * 100);
-  const color = pct >= 80 ? 'var(--green)' : pct >= 50 ? 'var(--amber)' : 'var(--red)';
+  const color = pct >= 80 ? 'green' : pct >= 50 ? 'goldenrod' : 'red';
 
   document.getElementById('reqBadge').textContent = checks.length;
 
@@ -285,7 +301,7 @@ function renderAll() {
         <div class="progress-track"><div class="progress-fill" style="width:${pct}%;background:${color}"></div></div>
       </div>
     </div>
-    <div><span class="score-pct" style="color:${color}">${pct}%</span><div style="font-size:12px;color:var(--muted)">requirements met</div></div>`;
+    <div><span class="score-pct" style="color:${color}">${pct}%</span><div style="font-size:12px;color:GrayText">requirements met</div></div>`;
 
   const critical = checks.filter(c => ['video','algo','abstraction','list','selection','iteration'].includes(c.id));
   document.getElementById('overviewChecks').innerHTML = critical.map(reqCard).join('');
@@ -345,13 +361,13 @@ function renderRubric(checks) {
 
   const rowHtml = rubricRows.map(r => {
     const s = statusFor(r.ids);
-    const color = s === 'pass' ? 'var(--green)' : s === 'warn' ? 'var(--amber)' : 'var(--red)';
+    const color = s === 'pass' ? 'green' : s === 'warn' ? 'goldenrod' : 'red';
     const icon = s === 'pass' ? '✓' : s === 'warn' ? '◑' : '✗';
     return `<tr>
       <td><span class="row-num">${r.row}</span></td>
       <td><span class="pts-badge">${r.pts} pt</span></td>
       <td style="font-weight:500">${r.skill}</td>
-      <td style="color:var(--muted)">${r.what}</td>
+      <td style="color:GrayText">${r.what}</td>
       <td style="text-align:center;color:${color};font-size:15px;font-weight:600">${icon}</td>
     </tr>`;
   }).join('');
