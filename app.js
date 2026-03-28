@@ -20,6 +20,31 @@ function setMode(mode) {
   document.getElementById('batchPane').style.display  = mode === 'batch'  ? 'block' : 'none';
   document.getElementById('modeSingle').classList.toggle('active', mode === 'single');
   document.getElementById('modeBatch').classList.toggle('active',  mode === 'batch');
+
+  // show/hide tabs based on mode
+  document.getElementById('portfolioTab').style.display = mode === 'single' ? '' : 'none';
+  document.getElementById('dashTab').style.display      = mode === 'batch'  ? '' : 'none';
+
+  // reset to a sensible default tab when switching
+  document.getElementById('mainContent').style.display = 'none';
+  document.getElementById('emptyState').style.display = 'block';
+}
+
+function showNewSearchBtn() {
+  let btn = document.getElementById('newSearchBtn');
+  if (!btn) {
+    btn = document.createElement('button');
+    btn.id = 'newSearchBtn';
+    btn.className = 'btn-new-search no-print';
+    btn.textContent = '← New search';
+    btn.onclick = () => {
+      document.querySelector('.search-area').style.display = 'block';
+      document.getElementById('mainContent').style.display = 'none';
+      document.getElementById('emptyState').style.display = 'block';
+      btn.remove();
+    };
+    document.getElementById('mainContent').prepend(btn);
+  }
 }
 
 function showError(msg) {
@@ -48,6 +73,7 @@ async function analyzeSingle() {
   if (!parsed) { showError('Could not parse that URL. Make sure it looks like https://github.com/username/repo'); return; }
   document.getElementById('emptyState').style.display = 'none';
   document.getElementById('mainContent').style.display = 'none';
+  document.querySelector('.search-area').style.display = 'none';
   setLoading(true, 'Fetching repository…');
   try {
     repoData = await loadRepo(parsed);
@@ -56,9 +82,11 @@ async function analyzeSingle() {
     setLoading(false);
     renderAll();
     document.getElementById('mainContent').style.display = 'block';
+    showNewSearchBtn();
     switchTab('overview', document.querySelector('.tab'));
   } catch(e) {
     setLoading(false);
+    document.querySelector('.search-area').style.display = 'block';
     showError('Could not load repository. Is it public? Check the URL and try again. (' + e.message + ')');
     document.getElementById('emptyState').style.display = 'block';
   }
@@ -72,10 +100,11 @@ async function analyzeBatch() {
   batchResults = [];
   document.getElementById('emptyState').style.display = 'none';
   document.getElementById('mainContent').style.display = 'block';
-  document.getElementById('dashTab').style.display = '';
+  document.querySelector('.search-area').style.display = 'none';
   switchTab('dashboard', document.getElementById('dashTab'));
   document.getElementById('dashBadge').textContent = urls.length;
   renderDashboardShell(urls);
+  showNewSearchBtn();
   for (let i = 0; i < urls.length; i++) {
     const url = urls[i];
     const parsed = parseRepo(url);

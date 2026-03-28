@@ -57,7 +57,7 @@
       <div class="tab" onclick="switchTab('requirements',this)">Requirements <span class="tab-badge" id="reqBadge">10</span></div>
       <div class="tab" onclick="switchTab('rubric',this)">CB Rubric</div>
       <div class="tab" onclick="switchTab('code',this)">Code</div>
-      <div class="tab" onclick="switchTab('portfolio',this)">Portfolio PDF</div>
+      <div class="tab" id="portfolioTab" onclick="switchTab('portfolio',this)">Portfolio PDF</div>
       <div class="tab" id="dashTab" style="display:none" onclick="switchTab('dashboard',this)">Class Dashboard <span class="tab-badge" id="dashBadge">0</span></div>
     </div>
 
@@ -82,59 +82,51 @@
     <div id="tab-portfolio" class="section">
       <div class="pdf-form">
         <h3>Digital Portfolio — Written Responses</h3>
-        <p style="font-size:13px;color:var(--muted);margin-bottom:1.25rem">Complete the six written response sections below, referencing the College Board prompt for each. These are also submitted at <a href="https://digitalportfolio.collegeboard.org" target="_blank">digitalportfolio.collegeboard.org</a>.</p>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:1.25rem">Complete the six written response sections below. These are also submitted at <a href="https://digitalportfolio.collegeboard.org" target="_blank">digitalportfolio.collegeboard.org</a>.</p>
         <div class="form-grid">
-          <div class="form-row">
-            <div class="form-group"><label>Student name</label><input id="pdf_name" placeholder="Full name" /></div>
-            <div class="form-group"><label>Teacher</label><input id="pdf_teacher" placeholder="Teacher name" /></div>
-          </div>
-          <div class="form-row">
-            <div class="form-group"><label>AP Exam year</label><input id="pdf_year" value="2026" /></div>
-            <div class="form-group"><label>Period / class</label><input id="pdf_period" placeholder="e.g. Period 3" /></div>
-          </div>
-
           <div class="form-section-title">Written Responses — 6 rows, 6 points total</div>
 
           <div class="form-group">
             <label>3a — Program Purpose &amp; Function</label>
             <div class="form-hint"><strong>Row 1 (1 pt):</strong> Describe the overall purpose of the program. Describe what the video shows, including the program's input and output. Describe the functionality demonstrated in the video.</div>
-            <textarea id="pdf_3a" placeholder="My program is… It takes input from… and produces… The video shows…"></textarea>
+            <div class="ce-block" id="pdf_3a" contenteditable="true" data-placeholder="My program is… It takes input from… and produces… The video shows…"></div>
           </div>
 
           <div class="form-group">
             <label>3b — Data Abstraction</label>
             <div class="form-hint"><strong>Row 2 (1 pt):</strong> Include two code segments: (i) showing the list being created/stored, and (ii) showing the list being used. Identify the name of the list and describe what data it represents.</div>
-            <textarea id="pdf_3b" placeholder="The list named '___' stores… Code segment (i) shows the list being created… Code segment (ii) shows the list being used to…"></textarea>
+            <div class="ce-block" id="pdf_3b" contenteditable="true" data-placeholder="The list named '___' stores…"></div>
           </div>
 
           <div class="form-group">
             <label>3c — Managing Complexity</label>
-            <div class="form-hint"><strong>Row 3 (1 pt):</strong> Explain how the list manages the complexity of the program. Describe how the program would be different without using this list — could it still be written without a list?</div>
-            <textarea id="pdf_3c" placeholder="The list manages complexity by… Without the list, the program would need to… making it significantly more complex because…"></textarea>
+            <div class="form-hint"><strong>Row 3 (1 pt):</strong> Explain how the list manages the complexity of the program. Describe how the program would be different without using this list.</div>
+            <div class="ce-block" id="pdf_3c" contenteditable="true" data-placeholder="The list manages complexity by…"></div>
           </div>
 
           <div class="form-group">
             <label>3d — Procedural Abstraction</label>
-            <div class="form-hint"><strong>Row 4 (1 pt):</strong> Include two code segments: (i) showing the procedure definition, and (ii) showing a call to the procedure. Identify the name, parameter(s), and how the parameter(s) affect the procedure's behavior.</div>
-            <textarea id="pdf_3d" placeholder="The procedure '___' takes the parameter(s) '___'. Code segment (i) defines the procedure… Code segment (ii) calls it with… The parameter affects behavior by…"></textarea>
+            <div class="form-hint"><strong>Row 4 (1 pt):</strong> Include two code segments: (i) showing the procedure definition, and (ii) showing a call to the procedure. Identify the name, parameter(s), and how they affect the procedure's behavior.</div>
+            <div class="ce-block" id="pdf_3d" contenteditable="true" data-placeholder="The procedure '___' takes the parameter(s) '___'…"></div>
           </div>
 
           <div class="form-group">
             <label>3e — Algorithm Implementation</label>
-            <div class="form-hint"><strong>Row 5 (1 pt):</strong> Describe what the identified algorithm does and how it achieves its purpose. Explain in detail how the algorithm includes sequencing, selection, and iteration.</div>
-            <textarea id="pdf_3e" placeholder="The algorithm achieves… It uses sequencing by executing… in order. It uses selection when… to decide between… It uses iteration through a loop that repeats…"></textarea>
+            <div class="form-hint"><strong>Row 5 (1 pt):</strong> Describe what the identified algorithm does and how it achieves its purpose. Explain how it includes sequencing, selection, and iteration.</div>
+            <div class="ce-block" id="pdf_3e" contenteditable="true" data-placeholder="The algorithm achieves…"></div>
           </div>
 
           <div class="form-group">
             <label>3f — Testing</label>
-            <div class="form-hint"><strong>Row 6 (1 pt):</strong> Describe two calls to the procedure using different arguments. For each call: identify the argument(s), the condition(s) tested, and the result of that call.</div>
-            <textarea id="pdf_3f" placeholder="Call 1: The procedure was called with argument '___'. The condition tested was… The result was… &#10;Call 2: The procedure was called with argument '___'. The condition tested was… The result was…"></textarea>
+            <div class="form-hint"><strong>Row 6 (1 pt):</strong> Describe two calls to the procedure using different arguments. For each: the argument, condition tested, and result.</div>
+            <div class="ce-block" id="pdf_3f" contenteditable="true" data-placeholder="Call 1: argument '___', condition tested was…&#10;Call 2: argument '___', condition tested was…"></div>
           </div>
         </div>
         <div class="pdf-actions">
           <button class="btn-pdf btn-generate" onclick="generatePDF()">↓ Download Portfolio PDF</button>
           <button class="btn-pdf btn-print" onclick="window.print()">⎙ Print</button>
         </div>
+        <div id="print-code-listing"></div>
       </div>
     </div>
 

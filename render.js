@@ -5,7 +5,7 @@ function escHtml(s) {
 }
 
 function statusColor(s) {
-  return s === 'pass' ? 'green' : s === 'warn' ? 'goldenrod' : 'red';
+  return s === 'pass' ? 'var(--green)' : s === 'warn' ? 'var(--amber)' : 'var(--red)';
 }
 
 function renderAll() {
@@ -48,6 +48,34 @@ function renderAll() {
 
   renderRubric(checks);
   renderCode();
+
+  // pre-fill 3a from README if the field is empty
+  const ta = document.getElementById('pdf_3a');
+  if (ta && !ta.textContent.trim() && repoData.readmeText) ta.textContent = repoData.readmeText.trim();
+
+  // populate print-only code listing
+  const listing = document.getElementById('print-code-listing');
+  if (listing) {
+    const files = Object.entries(codeContent);
+    if (files.length) {
+      const CHUNK = 50; // lines per unbreakable chunk
+      listing.innerHTML = '<div class="print-code-title">Code Listing</div>' +
+        files.map(([name, src]) => {
+          const lines = src.split('\n');
+          // split into chunks so page breaks happen between chunks, not mid-chunk
+          const chunks = [];
+          for (let i = 0; i < lines.length; i += CHUNK) {
+            chunks.push(lines.slice(i, i + CHUNK).map((line, j) =>
+              `<div class="pcl-row"><span class="pcl-ln">${i + j + 1}</span><span class="pcl-lc">${escHtml(line)}</span></div>`
+            ).join(''));
+          }
+          const chunkedBody = chunks.map(c => `<div class="pcl-chunk">${c}</div>`).join('');
+          return `<div class="pcl-file"><div class="pcl-filename">${escHtml(name)}</div><div class="pcl-body">${chunkedBody}</div></div>`;
+        }).join('');
+    } else {
+      listing.innerHTML = '';
+    }
+  }
 }
 
 function reqCard(c) {
