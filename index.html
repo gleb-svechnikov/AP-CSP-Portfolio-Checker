@@ -24,13 +24,19 @@
   </header>
 
   <div class="search-area no-print">
-    <h2>Analyze a student repository</h2>
-    <div class="input-row">
-      <input id="repoUrl" type="url" placeholder="https://github.com/username/repo-name" spellcheck="false" />
-      <button class="btn btn-primary" id="analyzeBtn" onclick="analyzeSingle()">Analyze</button>
+    <div class="mode-switch">
+      <button class="mode-btn active" id="modeSingle" onclick="setMode('single')">Single repo</button>
+      <button class="mode-btn" id="modeBatch" onclick="setMode('batch')">Batch / class</button>
     </div>
-    <span class="batch-toggle" onclick="toggleBatch()">⊞ Batch mode — paste multiple repos for whole-class analysis</span>
-    <div id="batchArea">
+
+    <div id="singlePane">
+      <div class="input-row">
+        <input id="repoUrl" type="url" placeholder="https://github.com/username/repo-name" spellcheck="false" />
+        <button class="btn btn-primary" id="analyzeBtn" onclick="analyzeSingle()">Analyze</button>
+      </div>
+    </div>
+
+    <div id="batchPane" style="display:none">
       <textarea id="batchUrls" placeholder="https://github.com/student1/project&#10;https://github.com/student2/project&#10;https://github.com/student3/project&#10;One URL per line"></textarea>
       <div style="display:flex;gap:8px;margin-top:8px;">
         <button class="btn btn-primary" onclick="analyzeBatch()">Analyze All</button>
@@ -144,6 +150,10 @@
 
 </div>
 
-<script src="script.js" defer></script>
+<script src="github.js" defer></script>
+<script src="checks.js" defer></script>
+<script src="render.js" defer></script>
+<script src="pdf.js" defer></script>
+<script src="app.js" defer></script>
 </body>
 </html>
