@@ -1,170 +1,364 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <meta name="color-scheme" content="light dark"/>
-    <title>AP CSP Portfolio Checker</title>
-    <link rel="stylesheet" href="style.css"/>
-    <script src="github.js" defer></script>
-    <script src="checks.js" defer></script>
-    <script src="render.js" defer></script>
-    <script src="app.js" defer></script>
-  </head>
-  <body>
-
-    <header class="site-header no-print">
-      <div class="logo">
-        <div class="logo-mark">
-          <svg viewBox="0 0 20 20"><path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9zM4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm9.707 5.707a1 1 0 00-1.414-1.414L9 12.586l-1.293-1.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"/></svg>
-        </div>
-        <div class="logo-text">
-          <h1>AP CSP Portfolio Checker</h1>
-          <p>College Board Create PT · Digital Portfolio Tool</p>
-        </div>
-      </div>
-      <span class="badge-cb">2025–2026 Rubric</span>
-    </header>
-
-    <main>
-
-      <aside class="search-area no-print">
-        <div class="mode-switch">
-          <button class="mode-btn active" id="modeSingle" onclick="setMode('single')">Single repo</button>
-          <button class="mode-btn" id="modeBatch" onclick="setMode('batch')">Batch / class</button>
-          <button class="mode-btn" id="modeLocal" onclick="setMode('local')">Local folder</button>
-        </div>
-
-        <div id="singlePane">
-          <div class="input-row">
-            <input id="repoUrl" type="url" placeholder="https://github.com/username/repo-name" spellcheck="false"/>
-            <button class="btn btn-primary" id="analyzeBtn" onclick="analyzeSingle()">Analyze</button>
-          </div>
-        </div>
-
-        <div id="batchPane" style="display:none">
-          <textarea id="batchUrls" placeholder="https://github.com/student1/project&#10;https://github.com/student2/project&#10;https://github.com/student3/project&#10;One URL per line"></textarea>
-          <div style="display:flex;gap:8px;margin-top:8px;">
-            <button class="btn btn-primary" onclick="analyzeBatch()">Analyze All</button>
-            <button class="btn btn-ghost" onclick="document.getElementById('batchUrls').value=''">Clear</button>
-          </div>
-        </div>
-
-        <div id="localPane" style="display:none">
-          <div class="local-drop" id="localDrop" onclick="analyzeLocal()">
-            <div class="local-drop-icon">📁</div>
-            <div class="local-drop-text">Click to choose a project folder</div>
-            <div class="local-drop-sub">Reads code files and README locally — nothing is uploaded</div>
-          </div>
-        </div>
-      </aside>
-
-      <div id="errorBox"></div>
-      <div id="loadingBox" style="display:none" class="loading no-print">
-        <div class="spinner"></div>
-        <p id="loadingMsg">Fetching repository…</p>
-      </div>
-
-      <section id="mainContent" style="display:none">
-        <div class="tabs no-print">
-          <div class="tab active" onclick="switchTab('overview',this)">Overview</div>
-          <div class="tab" onclick="switchTab('requirements',this)">Requirements <span class="tab-badge" id="reqBadge">10</span></div>
-          <div class="tab" onclick="switchTab('rubric',this)">CB Rubric</div>
-          <div class="tab" onclick="switchTab('code',this)">Code</div>
-          <div class="tab" id="portfolioTab" onclick="switchTab('portfolio',this)">Portfolio PDF</div>
-          <div class="tab" id="dashTab" style="display:none" onclick="switchTab('dashboard',this)">Class Dashboard <span class="tab-badge" id="dashBadge">0</span></div>
-        </div>
-
-        <div id="tab-overview" class="section active">
-          <div class="meta-strip" id="repoMeta"></div>
-          <div class="score-banner" id="scoreBanner"></div>
-          <div id="overviewChecks" class="req-grid"></div>
-        </div>
-
-        <div id="tab-requirements" class="section">
-          <div id="allRequirements" class="req-grid"></div>
-        </div>
-
-        <div id="tab-rubric" class="section">
-          <div id="rubricPanel"></div>
-        </div>
-
-        <div id="tab-code" class="section">
-          <div id="codePanel"></div>
-        </div>
-
-        <div id="tab-portfolio" class="section">
-          <div class="pdf-form">
-            <h3>Digital Portfolio — Written Responses</h3>
-            <p style="font-size:13px;color:var(--muted);margin-bottom:1.25rem">Complete the six written response sections below. These are also submitted at <a href="https://digitalportfolio.collegeboard.org" target="_blank">digitalportfolio.collegeboard.org</a>.</p>
-            <div class="form-grid">
-              <div class="form-section-title">Written Responses — 6 rows, 6 points total</div>
-
-              <div class="form-group">
-                <label>3a — Program Purpose &amp; Function</label>
-                <div class="form-hint">
-                  <strong>Row 1 (1 pt):</strong> Describe the overall purpose of the program. Describe what the video shows, including the program's input and output. Describe the functionality demonstrated in the video.</div>
-                <div class="ce-block" id="pdf_3a" contenteditable="true" data-placeholder="My program is… It takes input from… and produces… The video shows…"></div>
-              </div>
-
-              <div class="form-group">
-                <label>3b — Data Abstraction</label>
-                <div class="form-hint">
-                  <strong>Row 2 (1 pt):</strong> Include two code segments: (i) showing the list being created/stored, and (ii) showing the list being used. Identify the name of the list and describe what data it represents.</div>
-                <div class="ce-block" id="pdf_3b" contenteditable="true" data-placeholder="The list named '___' stores…"></div>
-              </div>
-
-              <div class="form-group">
-                <label>3c — Managing Complexity</label>
-                <div class="form-hint">
-                  <strong>Row 3 (1 pt):</strong> Explain how the list manages the complexity of the program. Describe how the program would be different without using this list.</div>
-                <div class="ce-block" id="pdf_3c" contenteditable="true" data-placeholder="The list manages complexity by…"></div>
-              </div>
-
-              <div class="form-group">
-                <label>3d — Procedural Abstraction</label>
-                <div class="form-hint">
-                  <strong>Row 4 (1 pt):</strong> Include two code segments: (i) showing the procedure definition, and (ii) showing a call to the procedure. Identify the name, parameter(s), and how they affect the procedure's behavior.</div>
-                <div class="ce-block" id="pdf_3d" contenteditable="true" data-placeholder="The procedure '___' takes the parameter(s) '___'…"></div>
-              </div>
-
-              <div class="form-group">
-                <label>3e — Algorithm Implementation</label>
-                <div class="form-hint">
-                  <strong>Row 5 (1 pt):</strong> Describe what the identified algorithm does and how it achieves its purpose. Explain how it includes sequencing, selection, and iteration.</div>
-                <div class="ce-block" id="pdf_3e" contenteditable="true" data-placeholder="The algorithm achieves…"></div>
-              </div>
-
-              <div class="form-group">
-                <label>3f — Testing</label>
-                <div class="form-hint">
-                  <strong>Row 6 (1 pt):</strong> Describe two calls to the procedure using different arguments. For each: the argument, condition tested, and result.</div>
-                <div class="ce-block" id="pdf_3f" contenteditable="true" data-placeholder="Call 1: argument '___', condition tested was…&#10;Call 2: argument '___', condition tested was…"></div>
-              </div>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="color-scheme" content="light dark" />
+        <title>AP CSP Portfolio Checker</title>
+        <link rel="stylesheet" href="style.css" />
+        <script src="github.js" defer></script>
+        <script src="checks.js" defer></script>
+        <script src="render.js" defer></script>
+        <script src="app.js" defer></script>
+    </head>
+    <body>
+        <header class="site-header no-print">
+            <div class="logo">
+                <div class="logo-mark">
+                    <svg viewBox="0 0 20 20">
+                        <path
+                            d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9zM4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm9.707 5.707a1 1 0 00-1.414-1.414L9 12.586l-1.293-1.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                        />
+                    </svg>
+                </div>
+                <div class="logo-text">
+                    <h1>AP CSP Portfolio Checker</h1>
+                    <p>College Board Create PT · Digital Portfolio Tool</p>
+                </div>
             </div>
-            <div class="pdf-actions">
-              <button class="btn-pdf btn-print" onclick="window.print()">⎙ Print</button>
+            <span class="badge-cb">2025–2026</span>
+        </header>
+
+        <main>
+            <aside class="search-area no-print">
+                <div class="mode-switch">
+                    <button
+                        class="mode-btn active"
+                        id="modeSingle"
+                        onclick="setMode('single')"
+                    >
+                        Single repo
+                    </button>
+                    <button
+                        class="mode-btn"
+                        id="modeBatch"
+                        onclick="setMode('batch')"
+                    >
+                        Batch / class
+                    </button>
+                    <button
+                        class="mode-btn"
+                        id="modeLocal"
+                        onclick="setMode('local')"
+                    >
+                        Local folder
+                    </button>
+                </div>
+
+                <div id="singlePane">
+                    <div class="input-row">
+                        <input
+                            id="repoUrl"
+                            type="url"
+                            placeholder="https://github.com/username/repo-name"
+                            spellcheck="false"
+                        />
+                        <button
+                            class="btn btn-primary"
+                            id="analyzeBtn"
+                            onclick="analyzeSingle()"
+                        >
+                            Analyze
+                        </button>
+                    </div>
+                </div>
+
+                <div id="batchPane" style="display: none">
+                    <textarea
+                        id="batchUrls"
+                        placeholder="https://github.com/student1/project&#10;https://github.com/student2/project&#10;https://github.com/student3/project&#10;One URL per line"
+                    ></textarea>
+                    <div style="display: flex; gap: 8px; margin-top: 8px">
+                        <button
+                            class="btn btn-primary"
+                            onclick="analyzeBatch()"
+                        >
+                            Analyze All
+                        </button>
+                        <button
+                            class="btn btn-ghost"
+                            onclick="document.getElementById('batchUrls').value=''"
+                        >
+                            Clear
+                        </button>
+                    </div>
+                </div>
+
+                <div id="localPane" style="display: none">
+                    <div
+                        class="local-drop"
+                        id="localDrop"
+                        onclick="analyzeLocal()"
+                    >
+                        <div class="local-drop-icon">📁</div>
+                        <div class="local-drop-text">
+                            Click to choose a project folder
+                        </div>
+                        <div class="local-drop-sub">
+                            Reads code files and README locally — nothing is
+                            uploaded
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <div id="errorBox"></div>
+            <div id="loadingBox" style="display: none" class="loading no-print">
+                <div class="spinner"></div>
+                <p id="loadingMsg">Fetching repository…</p>
             </div>
-            <div id="print-code-listing"></div>
-          </div>
-        </div>
 
-        <div id="tab-dashboard" class="section">
-          <div id="dashboardPanel"></div>
-        </div>
-      </section>
+            <section id="mainContent" style="display: none">
+                <div class="tabs no-print">
+                    <div
+                        class="tab active"
+                        onclick="switchTab('overview',this)"
+                    >
+                        Overview
+                    </div>
+                    <div class="tab" onclick="switchTab('requirements',this)">
+                        Requirements
+                        <span class="tab-badge" id="reqBadge">10</span>
+                    </div>
+                    <div class="tab" onclick="switchTab('rubric',this)">
+                        CB Rubric
+                    </div>
 
-      <section id="emptyState" class="empty">
-        <div class="empty-icon">◎</div>
-        <p>Enter a GitHub repository URL above to begin or pick local folder.</p>
-      </section>
+                    <div
+                        class="tab"
+                        id="programCodeTab"
+                        onclick="switchTab('program-code',this)"
+                    >
+                        Program Code
+                    </div>
+                    <div
+                        class="tab"
+                        id="portfolioTab"
+                        onclick="switchTab('portfolio',this)"
+                    >
+                        Personalized Project Reference
+                    </div>
+                    <div
+                        class="tab"
+                        id="dashTab"
+                        style="display: none"
+                        onclick="switchTab('dashboard',this)"
+                    >
+                        Class Dashboard
+                        <span class="tab-badge" id="dashBadge">0</span>
+                    </div>
+                </div>
 
-    </main>
+                <div id="tab-overview" class="section active">
+                    <div class="meta-strip" id="repoMeta"></div>
+                    <div class="score-banner" id="scoreBanner"></div>
+                    <div id="overviewChecks" class="req-grid"></div>
+                </div>
 
-    <footer class="site-footer">
-      <div >
-        <a href="https://github.com/gleb-svechnikov/AP-CSP-Portfolio-Checker/">View source on GitHub</a>
-      </div>
-    </footer>
-  </body>
+                <div id="tab-requirements" class="section">
+                    <div id="allRequirements" class="req-grid"></div>
+                </div>
+
+                <div id="tab-rubric" class="section">
+                    <div id="rubricPanel"></div>
+                </div>
+
+                <div id="tab-program-code" class="section">
+                    <div class="pdf-form">
+                        <h3>Program Code</h3>
+                        <p
+                            style="
+                                font-size: 13px;
+                                color: var(--muted);
+                                margin-bottom: 1.25rem;
+                            "
+                            contenteditable=""
+                        >
+                            Your code description ...
+                        </p>
+                        <div class="pdf-actions">
+                            <button
+                                class="btn-pdf btn-print"
+                                onclick="window.print()"
+                            >
+                                ⎙ Print Program Code
+                            </button>
+                        </div>
+                        <div id="print-code-listing"></div>
+                    </div>
+                </div>
+
+                <div id="tab-portfolio" class="section">
+                    <div class="pdf-form">
+                        <h3>Personalized Project Reference</h3>
+                        <p class="ppr-intro">
+                            Capture and paste your code segments below. These
+                            will be available to you on exam day only if
+                            submitted as final in the
+                            <a
+                                href="https://digitalportfolio.collegeboard.org"
+                                target="_blank"
+                                >AP Digital Portfolio</a
+                            >
+                            by the deadline. Screen captures must not be blurry
+                            and text must be at least 10-point font size.
+                            <strong
+                                >Do not include comments in your code
+                                segments.</strong
+                            >
+                        </p>
+
+                        <!-- ── PROCEDURE ── -->
+                        <div class="ppr-section">
+                            <div class="ppr-section-header">
+                                <span class="ppr-section-label">Procedure</span>
+                                <p class="ppr-section-desc">
+                                    Two code segments containing a
+                                    student-developed procedure that implements
+                                    an algorithm and a call to that procedure.
+                                    Built-in or existing procedures and language
+                                    structures are <em>not</em> considered
+                                    student-developed.
+                                </p>
+                            </div>
+
+                            <div class="ppr-segments">
+                                <div class="ppr-segment">
+                                    <div class="ppr-segment-label">
+                                        <span class="ppr-segment-num">i</span>
+                                        Student-developed procedure that:
+                                        <ul class="ppr-checklist">
+                                            <li>
+                                                Defines the procedure's name and
+                                                return type (if necessary)
+                                            </li>
+                                            <li>
+                                                Contains and uses one or more
+                                                parameters that have an effect
+                                                on the functionality of the
+                                                procedure
+                                            </li>
+                                            <li>
+                                                Implements an algorithm that
+                                                includes sequencing, selection,
+                                                and iteration
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    <div
+                                        class="ce-block ppr-code"
+                                        id="ppr_proc_def"
+                                        contenteditable="true"
+                                        data-placeholder="Paste your procedure definition here…"
+                                    ></div>
+                                </div>
+
+                                <div class="ppr-segment">
+                                    <div class="ppr-segment-label">
+                                        <span class="ppr-segment-num">ii</span>
+                                        Where your student-developed procedure
+                                        is being <strong>called</strong> in your
+                                        program.
+                                    </div>
+                                    <div
+                                        class="ce-block ppr-code"
+                                        id="ppr_proc_call"
+                                        contenteditable="true"
+                                        data-placeholder="Paste the code that calls your procedure here…"
+                                    ></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ── LIST ── -->
+                        <div class="ppr-section">
+                            <div class="ppr-section-header">
+                                <span class="ppr-section-label">List</span>
+                                <p class="ppr-section-desc">
+                                    Two code segments containing a list (or
+                                    other collection type) being used to manage
+                                    complexity. The data abstraction must manage
+                                    complexity by making the program easier to
+                                    develop or maintain.
+                                </p>
+                            </div>
+
+                            <div class="ppr-segments">
+                                <div class="ppr-segment">
+                                    <div class="ppr-segment-label">
+                                        <span class="ppr-segment-num">i</span>
+                                        How data have been
+                                        <strong>stored</strong> in the list.
+                                    </div>
+                                    <div
+                                        class="ce-block ppr-code"
+                                        id="ppr_list_store"
+                                        contenteditable="true"
+                                        data-placeholder="Paste the code where data is stored in your list here…"
+                                    ></div>
+                                </div>
+
+                                <div class="ppr-segment">
+                                    <div class="ppr-segment-label">
+                                        <span class="ppr-segment-num">ii</span>
+                                        The data in the same list being
+                                        <strong>used</strong> — such as creating
+                                        new data from the existing data or
+                                        accessing multiple elements — as part of
+                                        fulfilling the program's purpose.
+                                    </div>
+                                    <div
+                                        class="ce-block ppr-code"
+                                        id="ppr_list_use"
+                                        contenteditable="true"
+                                        data-placeholder="Paste the code where your list is used here…"
+                                    ></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="pdf-actions">
+                            <button
+                                class="btn-pdf btn-print"
+                                onclick="window.print()"
+                            >
+                                ⎙ Print Personalized Project Reference
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="tab-dashboard" class="section">
+                    <div id="dashboardPanel"></div>
+                </div>
+            </section>
+
+            <section id="emptyState" class="empty">
+                <div class="empty-icon">◎</div>
+                <p>
+                    Enter a GitHub repository URL above to begin or pick local
+                    folder.
+                </p>
+            </section>
+        </main>
+
+        <footer class="site-footer">
+            <div>
+                <a
+                    href="https://github.com/gleb-svechnikov/AP-CSP-Portfolio-Checker/"
+                    >View source on GitHub</a
+                >
+            </div>
+        </footer>
+    </body>
 </html>

@@ -60,7 +60,6 @@ html {
     }
 
     main {
-
         .input-row {
             display: flex;
             gap: 8px;
@@ -113,7 +112,6 @@ a {
 a:hover {
     text-decoration: underline;
 }
-
 
 /* Header */
 
@@ -205,8 +203,6 @@ a:hover {
 .mode-btn:not(.active):hover {
     color: var(--text);
 }
-
-
 
 .btn {
     height: 2.5rem;
@@ -317,8 +313,6 @@ a:hover {
 .section.active {
     display: block;
 }
-
-
 
 /* Loading / Empty */
 .loading {
@@ -571,54 +565,6 @@ a:hover {
     line-height: 1.5;
 }
 
-/* Code viewer */
-.code-file {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    margin-bottom: 10px;
-    overflow: hidden;
-}
-
-.code-file-header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 14px;
-    border-bottom: 1px solid var(--border);
-    background: var(--surface2);
-}
-
-.code-filename {
-    font-family: var(--mono);
-    font-size: 13px;
-    font-weight: 500;
-}
-
-.code-lines {
-    font-size: 12px;
-    color: var(--muted);
-}
-
-.code-link {
-    margin-left: auto;
-    font-size: 12px;
-}
-
-.code-body {
-    padding: 1rem;
-    overflow-x: auto;
-}
-
-.code-body pre {
-    font-family: var(--mono);
-    font-size: 12px;
-    line-height: 1.65;
-    white-space: pre;
-    max-height: 340px;
-    overflow-y: auto;
-}
-
 /* Rubric panel */
 .rubric-panel {
     background: var(--surface);
@@ -708,55 +654,119 @@ a:hover {
     padding: 1.5rem;
 }
 
+/* Personalized Project Reference */
+.ppr-intro {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+}
+
+.ppr-section {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 1.25rem;
+}
+
+.ppr-section-header {
+    padding: 12px 16px;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+}
+
+.ppr-section-label {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--accent);
+    background: var(--accent-subtle);
+    border: 1px solid var(--accent);
+    border-radius: 4px;
+    padding: 2px 8px;
+    margin-bottom: 6px;
+}
+
+.ppr-section-desc {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.55;
+    margin: 0;
+}
+
+.ppr-segments {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+}
+
+.ppr-segment {
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.ppr-segment + .ppr-segment {
+    border-left: 1px solid var(--border);
+}
+
+.ppr-segment-label {
+    font-size: 12px;
+    color: var(--text);
+    line-height: 1.5;
+}
+
+.ppr-segment-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    margin-right: 5px;
+    flex-shrink: 0;
+    vertical-align: middle;
+}
+
+.ppr-checklist {
+    margin: 6px 0 0 22px;
+    padding: 0;
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.6;
+}
+
+.ppr-code {
+    font-family: var(--mono) !important;
+    font-size: 12px !important;
+    line-height: 1.65;
+    min-height: 140px;
+    background: var(--bg);
+    white-space: pre-wrap;
+}
+
+@media (width < 700px) {
+    .ppr-segments {
+        grid-template-columns: 1fr;
+    }
+
+    .ppr-segment + .ppr-segment {
+        border-left: none;
+        border-top: 1px solid var(--border);
+    }
+}
+
 .pdf-form h3 {
     font-size: 15px;
     font-weight: 600;
     margin-bottom: 1rem;
-}
-
-.form-grid {
-    display: grid;
-    gap: 14px;
-}
-
-.form-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-}
-
-.form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.form-group label {
-    font-size: 12px;
-    font-weight: 600;
-}
-
-.form-hint {
-    font-size: 11px;
-    color: var(--muted);
-    line-height: 1.5;
-    padding: 6px 10px;
-    background: var(--accent-subtle);
-    border-radius: var(--radius-sm);
-    border-left: 2px solid var(--accent);
-}
-
-.form-group input,
-.form-group .ce-block {
-    padding: 9px 12px;
-    font-family: var(--sans);
-    font-size: 14px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    background: var(--bg);
-    color: var(--text);
-    outline: none;
-    transition: border-color 0.15s;
 }
 
 .ce-block {
@@ -774,20 +784,6 @@ a:hover {
 
 .ce-block:focus {
     border-color: var(--accent);
-}
-
-.form-group input:focus {
-    border-color: var(--accent);
-}
-
-.form-section-title {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    padding-top: 10px;
-    border-top: 1px solid var(--border);
 }
 
 .pdf-actions {
@@ -906,7 +902,6 @@ a:hover {
         }
     }
 
-
     .site-header {
         flex-direction: column;
         align-items: flex-start;
@@ -986,10 +981,6 @@ a:hover {
         padding: 8px 10px;
     }
 
-    .form-row {
-        grid-template-columns: 1fr;
-    }
-
     .pdf-form {
         padding: 1rem;
     }
@@ -1022,8 +1013,6 @@ a:hover {
 }
 
 @media (width < 1200px) {
-
-
     .req-grid {
         grid-template-columns: 1fr 1fr;
     }
@@ -1061,10 +1050,6 @@ a:hover {
     .pdf-form {
         padding: 2rem;
     }
-
-    .form-grid {
-        gap: 1rem;
-    }
 }
 
 @media print {
@@ -1077,12 +1062,12 @@ a:hover {
         color: #1c1b18;
     }
 
-    /* hide everything except the active portfolio section */
+    /* hide everything except the currently active section */
     .section {
         display: none !important;
     }
 
-    #tab-portfolio {
+    .section.active {
         display: block !important;
     }
 
@@ -1104,10 +1089,8 @@ a:hover {
         }
     }
 
-    /* code listing: hidden on screen, shown on print */
     #print-code-listing {
         display: block !important;
-        page-break-before: always;
         counter-reset: listing-page;
     }
 
@@ -1180,9 +1163,66 @@ a:hover {
     }
 }
 
-/* hide listing on screen */
+/* show listing on screen inside Program Code tab; keep hidden elsewhere */
+#tab-program-code #print-code-listing {
+    display: block;
+    margin-top: 1rem;
+}
+
 #print-code-listing {
     display: none;
+}
+
+/* on-screen styles for the code listing in Program Code tab */
+#tab-program-code .pcl-file {
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin-bottom: 1rem;
+    overflow: hidden;
+}
+
+#tab-program-code .pcl-filename {
+    font-family: monospace;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 6px 12px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    color: #4f46e5;
+}
+
+#tab-program-code .pcl-body {
+    font-family: monospace;
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+#tab-program-code .pcl-row {
+    display: flex;
+    min-height: 1.2em;
+}
+
+#tab-program-code .pcl-row:hover {
+    background: var(--surface);
+}
+
+#tab-program-code .pcl-ln {
+    min-width: 44px;
+    text-align: right;
+    padding: 0 8px 0 4px;
+    color: var(--muted);
+    border-right: 1px solid var(--border);
+    background: var(--surface);
+    flex-shrink: 0;
+    user-select: none;
+    font-size: 11px;
+}
+
+#tab-program-code .pcl-lc {
+    padding: 0 10px;
+    white-space: pre;
+    overflow-x: auto;
+    flex: 1;
 }
 
 .btn-new-search {
